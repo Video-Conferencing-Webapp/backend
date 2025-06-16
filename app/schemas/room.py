@@ -4,7 +4,7 @@ from datetime import datetime
 
 class RoomBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
-    max_participants: int = Field(default=100, ge=2, le=1000)
+    max_participants: Optional[int] = None
 
 class RoomCreate(RoomBase):
     pass
@@ -17,19 +17,19 @@ class RoomUpdate(BaseModel):
 class RoomResponse(RoomBase):
     id: str
     code: str
-    host_id: str
+    host_id: int
     is_active: bool
     created_at: datetime
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 class RoomJoin(BaseModel):
-    peer_id: str = Field(..., min_length=1)
+    peer_id: str
 
 class ParticipantResponse(BaseModel):
-    id: str
-    user_id: str
+    id: int
+    user_id: int
     peer_id: str
     is_presenter: bool
     joined_at: datetime

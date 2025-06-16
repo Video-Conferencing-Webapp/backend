@@ -1,5 +1,5 @@
+from typing import List
 from pydantic_settings import BaseSettings
-from typing import Optional
 import secrets
 
 class Settings(BaseSettings):
@@ -11,13 +11,14 @@ class Settings(BaseSettings):
     # Security
     SECRET_KEY: str = secrets.token_urlsafe(32)
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
     # Database
-    DATABASE_URL: str
+    DATABASE_URL: str = "sqlite+aiosqlite:///./meet_clone.db"
     
     # Redis
-    REDIS_URL: str
+    REDIS_URL: str = "redis://localhost:6379/0"
     
     # TURN server
     TURN_SERVER_URL: str
@@ -25,7 +26,7 @@ class Settings(BaseSettings):
     TURN_PASSWORD: str
     
     # CORS
-    BACKEND_CORS_ORIGINS: list[str] = ["http://localhost:5173"]
+    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:5173"]
     
     class Config:
         env_file = ".env"
