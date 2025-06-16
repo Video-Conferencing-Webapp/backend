@@ -6,7 +6,7 @@ from typing import List
 from app.core.database import get_db
 from app.models.room import Room, RoomParticipant
 from app.schemas.room import RoomCreate, RoomResponse, RoomJoin
-from app.core.auth import get_current_user
+from app.core.deps import get_current_active_user
 from app.models.user import User
 
 router = APIRouter()
@@ -14,7 +14,7 @@ router = APIRouter()
 @router.post("/create", response_model=RoomResponse)
 async def create_room(
     room_data: RoomCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new room"""
@@ -33,7 +33,7 @@ async def create_room(
 async def join_room(
     room_code: str,
     join_data: RoomJoin,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Join a room"""
@@ -80,7 +80,7 @@ async def join_room(
 
 @router.get("/active", response_model=List[RoomResponse])
 async def get_active_rooms(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get user's active rooms"""
@@ -91,3 +91,10 @@ async def get_active_rooms(
         )
     )
     return result.scalars().all()
+
+@router.get("/{room_id}", status_code=status.HTTP_200_OK)
+async def get_room(room_id: str, db: AsyncSession = Depends(get_db)):
+    room = await Room.get(db, room_id)
+    if not room:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Room not found")
+    return {"room_id": room.id, "created_at": room.created_at} 
