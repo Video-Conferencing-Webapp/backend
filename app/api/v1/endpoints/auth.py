@@ -4,6 +4,7 @@ from datetime import timedelta
 
 from app.core.database import get_db
 from app.models.user import User
+from app.models.user_preferences import UserPreferences
 from app.schemas.user import UserCreate, UserLogin, User as UserSchema
 from app.schemas.token import Token, RefreshTokenRequest, TokenResponse
 from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token, verify_token
@@ -37,6 +38,9 @@ async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
+    
+    # Create default preferences for new user
+    await UserPreferences.create_default_preferences(db, new_user.id)
     
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(data={"sub": new_user.email}, expires_delta=access_token_expires)
